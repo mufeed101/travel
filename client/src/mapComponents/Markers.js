@@ -3,7 +3,7 @@ import { Marker, Popup } from "react-map-gl";
 import 'mapbox-gl/dist/mapbox-gl.css';
 import './Map.css';
 
-function Markers({coordinates, cities}) {
+function Markers({coordinates}) {
   return (
     <div>
     {coordinates.length > 0 && coordinates.map((coord, index) => (
@@ -17,10 +17,6 @@ function Markers({coordinates, cities}) {
             height: '8px' 
           }}/>
         </Marker>
-        
-        <Popup latitude={coord[1]} longitude={coord[0]} closeButton={false} closeOnClick={false} anchor="bottom" offsetTop={-10} className="myPopup">
-          <div>{cities[index]}</div>
-        </Popup>
       </div>
     ))}
   </div>

@@ -24,41 +24,54 @@ function getViewportForLocations(locations) {
 }
 
 
-function fetchCoordinatesForCities(cities, setCoordinates, setViewport){
-  const citiesString = cities.join(",");
-  fetch(`/coordinates?cities=${citiesString}`)
-    .then(response => response.json())
-    .then(data => {
-      setCoordinates(data); // Save the returned coordinates to the state
-      setViewport(getViewportForLocations(data))
-    })
-    .catch(error => {
-      console.error('Error:', error);
-    });
-}
+async function fetchProximateCities(viewport){
+  const response = await fetch('/cities', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(viewport)
+  });
 
-
-async function handleMapClick(event) {
-  // Get click coordinates
-  const MAPBOX_TOKEN = process.env.REACT_APP_MAPBOX_TOKEN;
-
-  const longitude = event.lngLat.lng;
-  const latitude = event.lngLat.lat;
-
-  // Call geocoding service to translate coordinates to city name
-  const response = await fetch(
-    `https://api.mapbox.com/geocoding/v5/mapbox.places/${longitude},${latitude}.json?access_token=${MAPBOX_TOKEN}`
-  );
-  const data = await response.json();
-  const cityName = data.features[0]?.place_name || '';  // we take the first place's name
-
-  // Add city to itinerary
-  if (cityName) {
-    console.log(cityName)
-    //addCityToItinerary(cityName);
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
   } else {
-    alert('Could not determine city name from clicked location.');
+    return await response.json(); // return the cities data from the response.
   }
 }
 
-export { fetchCoordinatesForCities, handleMapClick };
+function filterCoordinates(coordinates, citiesToAdd){
+  const roundedCoordinates = coordinates.map(coord => [Math.round(coord[0]), Math.round(coord[1])]);
+  const roundedCoordinatesSet = new Set(roundedCoordinates.map(coord => coord.join(',')));
+  const result = citiesToAdd.filter(
+    (coord) => {
+      const roundedCoord = [Math.round(coord[0]), Math.round(coord[1])];
+      //console.log("roundedCoord: ", roundedCoord);
+      return !roundedCoordinatesSet.has(roundedCoord.join(','));
+  });
+  return result
+
+}
+
+async function fetchCoordinatesForCities(cities){
+  const citiesString = cities.join(",");
+  
+  const coordtinates = await fetch(`/coordinates?cities=${citiesString}`)
+    .then(response => response.json())
+    .catch(error => {
+      console.error('Error:', error);
+    });
+
+  return coordtinates
+}
+
+async function setCitiesToAddCoord(view, coordinates, setaddCityCoordinates){
+  const { latitude, longitude, zoom } = view;
+
+  const citiesToAdd = await fetchProximateCities({ latitude, longitude, zoom });
+  const filteredCitiesToAdd = filterCoordinates(coordinates, citiesToAdd)
+
+  setaddCityCoordinates(filteredCitiesToAdd)
+}
+
+export { fetchCoordinatesForCities, fetchProximateCities, filterCoordinates, getViewportForLocations, setCitiesToAddCoord };

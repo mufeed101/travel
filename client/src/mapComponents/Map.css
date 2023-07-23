@@ -1,4 +1,12 @@
-.myPopup > div {
-    background: rgba(255,255,255,0.5); /* white with 50% opacity */
-  }
-  
+.transparent-popup .mapboxgl-popup-content {
+  background-color: transparent !important;
+  box-shadow: none !important;
+}
+
+.transparent-popup .mapboxgl-popup-content::after {
+  display: none !important;
+}
+
+.mapboxgl-popup-tip {
+  display: none;
+}
