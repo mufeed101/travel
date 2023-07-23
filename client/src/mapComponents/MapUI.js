@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import ReactMapGL from "react-map-gl";
 import 'mapbox-gl/dist/mapbox-gl.css';
-import Markers from "./Markers";
-import GreyMarkers from "./GreyMarker";
+import Markers from "./markers/Markers";
+import GreyMarkers from "./markers/GreyMarkers";
 import Lines from "./Lines";
 import { debounce } from 'lodash';
 import { fetchCoordinatesForCities, getViewportForLocations, setCitiesToAddCoord, handleClickOutside } from "./MapHelpers";
@@ -18,7 +18,6 @@ function Map({cities}) {
     zoom: 3,
   });
 
-
   async function fetchCoordinatesForCitiesFunction(cities){
     const data = await fetchCoordinatesForCities(cities);
     setCoordinates(data); // Save the returned coordinates to the state
@@ -27,7 +26,6 @@ function Map({cities}) {
     setViewport(newViewport);
 
   }
-
   useEffect(
     () => {
       fetchCoordinatesForCitiesFunction(cities)
@@ -47,7 +45,7 @@ function Map({cities}) {
     setCitiesToAddCoord(evt.viewState, coordinates, setaddCityCoordinates)
   }
   
-  const debouncedHandleViewportChange = debounce(handleViewportChange, 500);
+  const debouncedHandleViewportChange = debounce(handleViewportChange, 400);
 
   const mapProps = {
     ...viewport,

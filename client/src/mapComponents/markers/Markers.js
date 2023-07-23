@@ -1,7 +1,7 @@
 import React from "react";
-import { Marker, Popup } from "react-map-gl";
+import { Marker } from "react-map-gl";
 import 'mapbox-gl/dist/mapbox-gl.css';
-import './Map.css';
+import './Markers.css';
 
 function Markers({coordinates}) {
   return (

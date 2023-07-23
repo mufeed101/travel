@@ -54,7 +54,7 @@ app.post('/cities', async (req, res) => {
       }
     )
     .sort({ population: -1 })
-    .limit(40)
+    .limit(30)
     .project({ "location.coordinates": 1, _id: 0 })
     .toArray(function (err, docs) {
         if (err) {
@@ -64,6 +64,7 @@ app.post('/cities', async (req, res) => {
     })
     const formattedCities = cities.map(doc => doc.location.coordinates);
     res.json(formattedCities)
+    client.close()
 });
 
 app.listen(5000, () => { console.log("Server started on port 5000") })

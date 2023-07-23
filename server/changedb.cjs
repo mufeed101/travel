@@ -21,7 +21,7 @@ async function run() {
     const database = client.db("sample_cities");
     const collection = database.collection("sample_cities");
 
-    await collection.createIndex({ location: "2dsphere" });
+    //await collection.createIndex({ location: "2dsphere" });
 
 
     //const cursor = collection.find();
