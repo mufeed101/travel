@@ -41,6 +41,9 @@ async function fetchProximateCities(viewport){
 }
 
 function filterCoordinates(coordinates, citiesToAdd){
+  if(!coordinates){
+    return []
+  }
   const roundedCoordinates = coordinates.map(coord => [Math.round(coord[0]), Math.round(coord[1])]);
   const roundedCoordinatesSet = new Set(roundedCoordinates.map(coord => coord.join(',')));
   const result = citiesToAdd.filter(
@@ -54,8 +57,11 @@ function filterCoordinates(coordinates, citiesToAdd){
 }
 
 async function fetchCoordinatesForCities(cities){
+  if(!cities || cities.length < 1){
+    console.log(cities)
+    return []
+  }
   const citiesString = cities.join(",");
-  
   const coordtinates = await fetch(`/coordinates?cities=${citiesString}`)
     .then(response => response.json())
     .catch(error => {
@@ -65,11 +71,20 @@ async function fetchCoordinatesForCities(cities){
   return coordtinates
 }
 
-async function setCitiesToAddCoord(view, coordinates, setaddCityCoordinates){
+async function setCitiesToAddCoord(view, coordinates, selectedMarker, setaddCityCoordinates){
   const { latitude, longitude, zoom } = view;
 
   const citiesToAdd = await fetchProximateCities({ latitude, longitude, zoom });
-  const filteredCitiesToAdd = filterCoordinates(coordinates, citiesToAdd)
+  let filteredCitiesToAdd = filterCoordinates(coordinates, citiesToAdd)
+
+  if(selectedMarker){
+    
+    const [selectedLng, selectedLat] = selectedMarker.split('-').map(Number);
+
+    filteredCitiesToAdd = filteredCitiesToAdd.filter(([lng, lat]) => {
+      return !(lng === selectedLng && lat === selectedLat);
+    });
+  }
 
   setaddCityCoordinates(filteredCitiesToAdd)
 }

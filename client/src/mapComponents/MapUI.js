@@ -5,7 +5,7 @@ import Markers from "./markers/Markers";
 import GreyMarkers from "./markers/GreyMarkers";
 import Lines from "./Lines";
 import { debounce } from 'lodash';
-import { fetchCoordinatesForCities, getViewportForLocations, setCitiesToAddCoord, handleClickOutside } from "./MapHelpers";
+import { fetchCoordinatesForCities, getViewportForLocations, setCitiesToAddCoord } from "./MapHelpers";
 
 function Map({cities}) {
   const [coordinates, setCoordinates] = useState([])
@@ -28,24 +28,30 @@ function Map({cities}) {
   }
   useEffect(
     () => {
-      fetchCoordinatesForCitiesFunction(cities)
+      if(cities && cities.length > 1){
+        console.log(cities)
+        fetchCoordinatesForCitiesFunction(cities)
+      }
     }
     ,[cities]
   )
 
   useEffect(
     () => {
-      setCitiesToAddCoord(viewport, coordinates, setaddCityCoordinates);
+      if(viewport){
+        
+      setCitiesToAddCoord(viewport, coordinates, selectedMarker, setaddCityCoordinates);
+      }
     }
     ,[coordinates]
   )
 
   async function handleViewportChange(evt) {
     setViewport(evt.viewport);
-    setCitiesToAddCoord(evt.viewState, coordinates, setaddCityCoordinates)
+    setCitiesToAddCoord(evt.viewState, coordinates, selectedMarker, setaddCityCoordinates)
   }
   
-  const debouncedHandleViewportChange = debounce(handleViewportChange, 400);
+  const debouncedHandleViewportChange = debounce(handleViewportChange, 300);
 
   const mapProps = {
     ...viewport,
@@ -61,12 +67,14 @@ function Map({cities}) {
     <div style={{ width: "100vw", height: "100vh" }}>
       <ReactMapGL onClick={() => setSelectedMarker(null)} {...mapProps}>
         <Markers coordinates={coordinates} cities={cities}/>
+        
+        <Lines coordinates={coordinates}></Lines>
         <GreyMarkers 
           coordinates={addCityCoordinates} 
           selectedMarker={selectedMarker} 
+          setCoordinates={setCoordinates}
           setSelectedMarker={setSelectedMarker}
         />
-        <Lines coordinates={coordinates}></Lines>
       </ReactMapGL>
     </div>
   );

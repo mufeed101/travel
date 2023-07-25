@@ -14,7 +14,7 @@ function Lines({coordinates}) {
 
     return (
     <div>
-        {coordinates.length > 0 && 
+        {coordinates && coordinates.length > 0 && 
         <Source id="route" type="geojson" data={data}>
             <Layer
             id="route"

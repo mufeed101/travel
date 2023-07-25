@@ -1,7 +1,13 @@
 import express from 'express';
-import { fetchClient, zoomToRadius, calculateLimit } from './serverHelpers.js';
+import { Redis } from 'ioredis';
+
+import { zoomToRadius } from './serverHelpers.js';
 
 const app = express()
+
+
+const redis = new Redis({})
+
 //const fetch = require('node-fetch');
 // es6 syntax
 import fetch from 'node-fetch';
@@ -36,35 +42,28 @@ app.get('/coordinates', async (req, res) => {
 
 app.post('/cities', async (req, res) => {
     const { latitude, longitude, zoom } = req.body
-    const client = fetchClient()
-    const collection = client.db("sample_cities").collection("sample_cities");
-    const limit = calculateLimit(zoom);
-    const cities = await collection
-    .find(
-      {
-        location: {
-          $near: {
-            $geometry: {
-              type: "Point",
-              coordinates: [longitude, latitude]
-            },
-            $maxDistance: zoomToRadius(zoom)
-          }
-        }
-      }
-    )
-    .sort({ population: -1 })
-    .limit(30)
-    .project({ "location.coordinates": 1, _id: 0 })
-    .toArray(function (err, docs) {
-        if (err) {
-            console.error("Error retrieving documents:", err);
-            return;
-        }
-    })
-    const formattedCities = cities.map(doc => doc.location.coordinates);
-    res.json(formattedCities)
-    client.close()
+    if(!latitude || !longitude || !zoom){
+      return res.status(400).json({ error: 'Either Latitude, longitude or zoom not provided' });
+    }
+    
+    const coordinates = await redis.georadius('cities', longitude, latitude, zoomToRadius(zoom), 'km');
+
+    // Get population for each city
+    const citiesWithPop = await Promise.all(coordinates.map(async coord => {
+      const population = await redis.zscore('cities_pop', coord);
+      return { coord, population };
+    }));
+
+    // Sort cities by population
+    const sortedCities = citiesWithPop.sort((a, b) => b.population - a.population);
+
+    // Get top 40 cities
+    const topCities = sortedCities.slice(0, 40);
+    const finalOutput = topCities.map(city => {
+      const [longitude, latitude] = city.coord.split(',').map(Number);
+      return [latitude, longitude];
+    });
+    res.json(finalOutput);
 });
 
 app.listen(5000, () => { console.log("Server started on port 5000") })

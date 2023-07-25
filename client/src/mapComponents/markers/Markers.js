@@ -4,6 +4,11 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 import './Markers.css';
 
 function Markers({coordinates}) {
+  if(!coordinates){
+    return (
+      <div></div>
+    );
+  }
   return (
     <div>
     {coordinates.length > 0 && coordinates.map((coord, index) => (

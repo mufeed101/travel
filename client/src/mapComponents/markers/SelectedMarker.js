@@ -4,7 +4,7 @@ import { Marker, Popup } from "react-map-gl";
 import { AiOutlinePlusCircle } from 'react-icons/ai'; // import the "add" icon
 import './Markers';
 
-function SelectedMarker({ selectedMarker, setSelectedMarker }) {
+function SelectedMarker({ selectedMarker, setSelectedMarker, setCoordinates  }) {
     let selectMarkerLat;
     let selectMarkerLng;
 
@@ -30,7 +30,11 @@ function SelectedMarker({ selectedMarker, setSelectedMarker }) {
             onClose={() => setSelectedMarker(null)}
             >
             <div style={{ backgroundColor: 'transparent' }}>
-                <AiOutlinePlusCircle size={32} color="red" /> {/* Change size and color */}
+                <AiOutlinePlusCircle size={32} color="red" style={{cursor: "pointer"}}  onClick={() => {
+                    const selectedCoordinate = [selectMarkerLng, selectMarkerLat];
+                    setCoordinates(prevCoordinates => [...prevCoordinates, selectedCoordinate]);
+                    setSelectedMarker(null);
+                 }}/> {/* Change size and color */}
             </div>
             </Popup>
 
